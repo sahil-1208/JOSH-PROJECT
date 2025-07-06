@@ -1,0 +1,88 @@
+version: '3.9'
+
+services:
+  ntu-vm-comp20081:
+    container_name: ntu-vm-comp20081_
+    image: pedrombmachado/ntu_lubuntu:comp20081
+    pull_policy: never
+    ports:
+      - "3390:3389"
+      - "2022:22"
+    hostname: ntu-vm-comp20081
+    volumes:
+      - docker_comp20081:/home/ntu-user
+    networks:
+      - comp20081_network
+
+  ntu-load-balancer:
+    container_name: ntu-load-balancer
+    image: pedrombmachado/simple-ssh-container:base
+    pull_policy: never
+    ports:
+      - "1234:1234"
+      - "2023:22"
+    hostname: ntu-load-balancer
+    volumes:
+      - load_balancer_data:/home/ntu-user
+    networks:
+      - comp20081_network
+
+  comp20081-files-container1:
+    container_name: comp20081-files-container1
+    image: pedrombmachado/simple-ssh-container:base
+    pull_policy: never
+    ports:
+      - "4848:22"
+    hostname: comp20081-files-container1
+    volumes:
+      - file1_data:/home/ntu-user
+    networks:
+      - comp20081_network
+
+  comp20081-files-container2:
+    container_name: comp20081-files-container2
+    image: pedrombmachado/simple-ssh-container:base
+    pull_policy: never
+    ports:
+      - "4849:22"
+    hostname: comp20081-files-container2
+    volumes:
+      - file2_data:/home/ntu-user
+    networks:
+      - comp20081_network
+
+  comp20081-files-container3:
+    container_name: comp20081-files-container3
+    image: pedrombmachado/simple-ssh-container:base
+    pull_policy: never
+    ports:
+      - "4850:22"
+    hostname: comp20081-files-container3
+    volumes:
+      - file3_data:/home/ntu-user
+    networks:
+      - comp20081_network
+
+  comp20081-files-container4:
+    container_name: comp20081-files-container4
+    image: pedrombmachado/simple-ssh-container:base
+    pull_policy: never
+    ports:
+      - "4851:22"
+    hostname: comp20081-files-container4
+    volumes:
+      - file4_data:/home/ntu-user
+    networks:
+      - comp20081_network
+
+volumes:
+  docker_comp20081:
+  load_balancer_data:
+  file1_data:
+  file2_data:
+  file3_data:
+  file4_data:
+
+networks:
+  comp20081_network:
+    driver: bridge
