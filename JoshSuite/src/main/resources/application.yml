@@ -1,13 +1,14 @@
 server:
-  port: 8081
+  address: 0.0.0.0
+  port: 8080
 
 spring:
   datasource:
     mysql:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/user_details
+      url: jdbc:mysql://comp20081-mysql:330/user_details
       username: root
-      password: sahil12
+      password: sahil1208
   jpa:
     mysql:
       hibernate:
@@ -44,5 +45,4 @@ file-storage:
     port: 22
   ssh:
     username: ntu-user
-    private-key-path: ${user.home}/.ssh/id_ed25519
-    public-key-path: ${user.home}/.ssh/id_ed25519.pub
+    private-key-path: /home/ntu-user/.ssh/id_rsa

@@ -1,10 +1,8 @@
 package com.josh.service.impl;
 
-
-
 import com.josh.entity.file.FileMetaData;
-import com.josh.repo.file.FileMetaDataMySQLRepository;
-import com.josh.repo.file.FileMetaDataSQLiteRepository;
+import com.josh.repo.session.FileMetaDataSQLiteRepository;
+import com.josh.repo.user.FileMetaDataMySQLRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,15 +20,13 @@ public class DatabaseSyncService {
     private final FileMetaDataMySQLRepository mysqlRepo;
 
     @Scheduled(fixedDelay = 60000)
-    @Transactional
     public void syncFileMetaData() {
         List<FileMetaData> unsyncedFiles = sqliteRepo.findBySyncedFalse();
 
         for (FileMetaData meta : unsyncedFiles) {
             try {
-                mysqlRepo.save(meta);
-                meta.setSynced(true);
-                sqliteRepo.save(meta);
+                saveToMySQL(meta);         // ✅ Save using MySQL transaction
+                markAsSyncedInSQLite(meta); // ✅ Update using SQLite transaction
 
                 log.info("Synced metadata for file: {}", meta.getFilename());
 
@@ -38,5 +34,16 @@ public class DatabaseSyncService {
                 log.error("Failed to sync file metadata: {}", meta.getFilename(), e);
             }
         }
+    }
+
+    @Transactional(transactionManager = "mysqlTransactionManager")
+    public void saveToMySQL(FileMetaData meta) {
+        mysqlRepo.save(meta);
+    }
+
+    @Transactional(transactionManager = "sqliteTransactionManager")
+    public void markAsSyncedInSQLite(FileMetaData meta) {
+        meta.setSynced(true);
+        sqliteRepo.save(meta);
     }
 }

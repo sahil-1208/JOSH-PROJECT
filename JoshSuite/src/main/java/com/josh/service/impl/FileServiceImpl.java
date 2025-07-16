@@ -5,13 +5,12 @@ import com.josh.entity.file.FileMetaData;
 import com.josh.exception.FileDownloadException;
 import com.josh.exception.FileNotFoundException;
 import com.josh.exception.FileUploadException;
-import com.josh.repo.file.FileMetaDataRepository;
+import com.josh.repo.session.FileMetaDataSQLiteRepository;
 import com.josh.service.FileService;
 import com.josh.utils.CryptoUtil;
 import com.josh.utils.SSHUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,9 +24,8 @@ import java.util.stream.IntStream;
 public class FileServiceImpl implements FileService {
 
     private final CryptoUtil cryptoUtil;
-    private final FileMetaDataRepository metaRepo;
     private final SSHUtil sshUtil;
-    private final Environment env;
+    private final FileMetaDataSQLiteRepository metaRepo;
 
     private final int CHUNK_SIZE = 1024 * 1024; // 1MB
 
@@ -46,9 +44,10 @@ public class FileServiceImpl implements FileService {
 
                         String container = "comp20081-files-container" + ((i % 4) + 1);
                         String remotePath = "/home/ntu-user/" + UUID.randomUUID() + ".chunk";
+                        int port = getSshPortForContainer(container);
 
                         try {
-                            sshUtil.sendFileToContainer(chunk, container, remotePath);
+                            sshUtil.sendFileToContainer(chunk, "localhost", port, remotePath);
                             return new ChunkInfo(i, container, remotePath);
                         } catch (Exception e) {
                             throw new FileUploadException("Failed to upload chunk " + i + " to container: " + e.getMessage());
@@ -81,7 +80,8 @@ public class FileServiceImpl implements FileService {
 
         meta.getChunks().forEach(chunk -> {
             try {
-                byte[] encryptedChunk = sshUtil.fetchFileFromContainer(chunk.getContainerName(), chunk.getRemotePath());
+                int port = getSshPortForContainer(chunk.getContainerName());
+                byte[] encryptedChunk = sshUtil.fetchFileFromContainer("localhost", port, chunk.getRemotePath());
                 outputStream.writeBytes(encryptedChunk);
             } catch (Exception e) {
                 throw new FileDownloadException("Failed to fetch chunk from container: " + chunk.getContainerName());
@@ -93,5 +93,15 @@ public class FileServiceImpl implements FileService {
         } catch (Exception exception) {
             throw new FileDownloadException("Failed to decrypt file: " + exception.getMessage());
         }
+    }
+
+    private int getSshPortForContainer(String containerName) {
+        return switch (containerName) {
+            case "comp20081-files-container1" -> 4848;
+            case "comp20081-files-container2" -> 4849;
+            case "comp20081-files-container3" -> 4850;
+            case "comp20081-files-container4" -> 4851;
+            default -> throw new FileUploadException("Unknown container: " + containerName);
+        };
     }
 }

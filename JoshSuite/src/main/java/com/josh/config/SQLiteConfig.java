@@ -43,7 +43,7 @@ public class SQLiteConfig {
 
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setDataSource(sqliteDataSource());
-        factoryBean.setPackagesToScan("com.josh.entity.session");
+        factoryBean.setPackagesToScan("com.josh.entity.session","com.josh.entity.file");
         HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
         factoryBean.setJpaVendorAdapter(adapter);
         Map<String, String> props = new HashMap<>();

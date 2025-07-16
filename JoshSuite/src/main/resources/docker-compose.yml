@@ -1,6 +1,23 @@
 version: '3.9'
 
 services:
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: sahil1208
+      MYSQL_DATABASE: user_details
+    ports:
+      - "3307:3307"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      comp20081_network:
+        ipv4_address: 172.18.0.100
+
+  # Ubuntu base image
   ntu-vm-comp20081:
     container_name: ntu-vm-comp20081_
     image: pedrombmachado/ntu_lubuntu:comp20081
@@ -12,8 +29,10 @@ services:
     volumes:
       - docker_comp20081:/home/ntu-user
     networks:
-      - comp20081_network
+      comp20081_network:
+        ipv4_address: 172.18.0.10
 
+  # Load balancer
   ntu-load-balancer:
     container_name: ntu-load-balancer
     image: pedrombmachado/simple-ssh-container:base
@@ -25,8 +44,10 @@ services:
     volumes:
       - load_balancer_data:/home/ntu-user
     networks:
-      - comp20081_network
+      comp20081_network:
+        ipv4_address: 172.18.0.11
 
+  # File storage containers (4)
   comp20081-files-container1:
     container_name: comp20081-files-container1
     image: pedrombmachado/simple-ssh-container:base
@@ -37,7 +58,8 @@ services:
     volumes:
       - file1_data:/home/ntu-user
     networks:
-      - comp20081_network
+      comp20081_network:
+        ipv4_address: 172.18.0.21
 
   comp20081-files-container2:
     container_name: comp20081-files-container2
@@ -49,7 +71,8 @@ services:
     volumes:
       - file2_data:/home/ntu-user
     networks:
-      - comp20081_network
+      comp20081_network:
+        ipv4_address: 172.18.0.22
 
   comp20081-files-container3:
     container_name: comp20081-files-container3
@@ -61,7 +84,8 @@ services:
     volumes:
       - file3_data:/home/ntu-user
     networks:
-      - comp20081_network
+      comp20081_network:
+        ipv4_address: 172.18.0.23
 
   comp20081-files-container4:
     container_name: comp20081-files-container4
@@ -73,9 +97,11 @@ services:
     volumes:
       - file4_data:/home/ntu-user
     networks:
-      - comp20081_network
+      comp20081_network:
+        ipv4_address: 172.18.0.24
 
 volumes:
+  mysql_data:
   docker_comp20081:
   load_balancer_data:
   file1_data:
@@ -86,3 +112,6 @@ volumes:
 networks:
   comp20081_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16

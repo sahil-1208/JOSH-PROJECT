@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Configuration
 @EnableTransactionManagement
@@ -36,7 +37,7 @@ public class MySQLConfig {
     @Primary
     public DataSource mysqlDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(environment.getProperty("spring.datasource.mysql.driver-class-name"));
+        dataSource.setDriverClassName(Objects.requireNonNull(environment.getProperty("spring.datasource.mysql.driver-class-name")));
         dataSource.setUrl(environment.getProperty("spring.datasource.mysql.url"));
         dataSource.setUsername(environment.getProperty("spring.datasource.mysql.username"));
         dataSource.setPassword(environment.getProperty("spring.datasource.mysql.password"));
@@ -49,7 +50,7 @@ public class MySQLConfig {
 
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setDataSource(mysqlDataSource());
-        factoryBean.setPackagesToScan("com.josh.entity.user");
+        factoryBean.setPackagesToScan("com.josh.entity.user","com.josh.entity.file");
         HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
         factoryBean.setJpaVendorAdapter(adapter);
         Map<String, String> props = new HashMap<>();
